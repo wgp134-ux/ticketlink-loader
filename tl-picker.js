@@ -26,7 +26,6 @@
   var box=document.createElement('div');
   box.id='tl-picker';
   box.style='position:fixed;left:8px;right:8px;bottom:8px;max-height:65vh;overflow:auto;z-index:2147483647;background:#fff;border:2px solid #222;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.3);font:13px/1.4 -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial';
-
   box.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-bottom:1px solid #ddd;background:#f7f7f7;font-weight:700">경기 선택<button id="tl-picker-close" style="border:0;background:#ddd;border-radius:8px;padding:6px 10px">닫기</button></div><div id="tl-picker-body"></div>';
 
   document.body.appendChild(box);
@@ -42,7 +41,6 @@
     var d=document.createElement('div');
     d.style='padding:12px;border-bottom:1px solid #eee;white-space:pre-wrap;-webkit-tap-highlight-color:rgba(0,0,0,.08)';
     d.textContent=(i+1)+'. ['+(it.type==='reserve'?'예매가능':'판매예정')+'] '+it.text;
-
     d.onclick=function(){
       try{it.row.scrollIntoView({block:"center"});}catch(e){}
       if(it.btn){
@@ -51,7 +49,6 @@
         setTimeout(function(){it.btn.click();},80);
       }
     };
-
     body.appendChild(d);
   });
 })();
