@@ -1,18 +1,19 @@
-(function(){
+function tlPicker(){
   var old=document.getElementById('tl-picker');
-  if(old)old.remove();
+  if(old) old.remove();
 
   var rows=[].slice.call(document.querySelectorAll('tr'));
   var items=[];
 
   rows.forEach(function(tr,idx){
     var txt=(tr.innerText||'').replace(/\s+/g,' ').trim();
-    if(!txt)return;
+    if(!txt) return;
 
     var btn=tr.querySelector('a.btn_reserve');
     var isReserve=txt.includes('예매하기');
     var isPending=txt.includes('판매예정');
-    if(!isReserve&&!isPending)return;
+
+    if(!isReserve&&!isPending) return;
 
     items.push({
       row:tr,
@@ -25,13 +26,18 @@
 
   var box=document.createElement('div');
   box.id='tl-picker';
-  box.style='position:fixed;left:8px;right:8px;bottom:8px;max-height:65vh;overflow:auto;z-index:2147483647;background:#fff;border:2px solid #222;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.3);font:13px/1.4 -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial';
-  box.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-bottom:1px solid #ddd;background:#f7f7f7;font-weight:700">경기 선택<button id="tl-picker-close" style="border:0;background:#ddd;border-radius:8px;padding:6px 10px">닫기</button></div><div id="tl-picker-body"></div>';
+  box.style='position:fixed;right:20px;bottom:20px;width:420px;max-height:70vh;overflow:auto;z-index:2147483647;background:#fff;border:2px solid #222;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.3);font:14px/1.45 -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial';
+
+  box.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-bottom:1px solid #ddd;background:#f7f7f7;font-weight:700">경기 선택<button id="tl-picker-close" style="border:0;background:#ddd;border-radius:8px;padding:4px 8px;cursor:pointer">닫기</button></div><div id="tl-picker-body"></div>';
 
   document.body.appendChild(box);
-  document.getElementById('tl-picker-close').onclick=function(){box.remove()};
+
+  document.getElementById('tl-picker-close').onclick=function(){
+    box.remove();
+  };
 
   var body=document.getElementById('tl-picker-body');
+
   if(!items.length){
     body.innerHTML='<div style="padding:12px">경기를 찾지 못했습니다.</div>';
     return;
@@ -39,16 +45,25 @@
 
   items.forEach(function(it,i){
     var d=document.createElement('div');
-    d.style='padding:12px;border-bottom:1px solid #eee;white-space:pre-wrap;-webkit-tap-highlight-color:rgba(0,0,0,.08)';
+    d.style='padding:10px 12px;border-bottom:1px solid #eee;cursor:pointer;white-space:pre-wrap';
+
     d.textContent=(i+1)+'. ['+(it.type==='reserve'?'예매가능':'판매예정')+'] '+it.text;
+
     d.onclick=function(){
       try{it.row.scrollIntoView({block:"center"});}catch(e){}
       if(it.btn){
         it.btn.style.pointerEvents='auto';
         it.btn.classList.remove('disabled');
-        setTimeout(function(){it.btn.click();},80);
+
+        setTimeout(function(){
+          it.btn.dispatchEvent(new MouseEvent("click",{bubbles:true,cancelable:true,view:window}));
+        },80);
       }
     };
+
     body.appendChild(d);
   });
-})();
+}
+
+// 자동 실행
+tlPicker();
