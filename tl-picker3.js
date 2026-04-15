@@ -40,15 +40,8 @@
       return false;
     }
 
-    var mo=new MutationObserver(function(){
-      run();
-    });
-
-    mo.observe(document.documentElement,{
-      childList:true,
-      subtree:true,
-      attributes:true
-    });
+    var mo=new MutationObserver(function(){ run(); });
+    mo.observe(document.documentElement,{ childList:true, subtree:true, attributes:true });
 
     window.__tlAutoConfirm3Stop=function(){
       try{ mo.disconnect(); }catch(e){}
@@ -75,15 +68,11 @@
 
     var m=str.match(/\/reserve\/product\/\d+[^'"\s)]*/);
     if(m){
-      try{
-        return new URL(m[0], location.origin).toString();
-      }catch(e){}
+      try{ return new URL(m[0], location.origin).toString(); }catch(e){}
     }
 
     var m2=str.match(/https?:\/\/[^'"\s)]+/);
-    if(m2){
-      return m2[0];
-    }
+    if(m2) return m2[0];
 
     return null;
   }
@@ -111,19 +100,6 @@
     }catch(e){}
 
     return null;
-  }
-
-  function openTarget(url){
-    if(!url) return false;
-    try{
-      window.open(url, "_blank");
-      return true;
-    }catch(e){}
-    try{
-      location.href=url;
-      return true;
-    }catch(e){}
-    return false;
   }
 
   function collectItems(){
@@ -177,15 +153,12 @@
     box.id="tl-picker";
     box.style="position:fixed;right:20px;bottom:20px;width:420px;max-width:calc(100vw - 24px);max-height:70vh;overflow:auto;z-index:2147483647;background:#fff;border:2px solid #222;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.3);font:14px/1.45 -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial";
 
-    box.innerHTML=
-      '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-bottom:1px solid #ddd;background:#f7f7f7;font-weight:700">경기 선택<button id="tl-picker-close" style="border:0;background:#ddd;border-radius:8px;padding:4px 8px;cursor:pointer">닫기</button></div>'+
+    box.innerHTML =
+      '<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-bottom:1px solid #ddd;background:#f7f7f7;font-weight:700">경기 선택<button id="tl-picker-close" style="border:0;background:#ddd;border-radius:8px;padding:4px 8px;cursor:pointer">닫기</button></div>' +
       '<div id="tl-picker-body"></div>';
 
     document.body.appendChild(box);
-
-    document.getElementById("tl-picker-close").onclick=function(){
-      box.remove();
-    };
+    document.getElementById("tl-picker-close").onclick=function(){ box.remove(); };
 
     var body=document.getElementById("tl-picker-body");
 
@@ -194,77 +167,56 @@
       return;
     }
 
+    function openImmediately(it, ev){
+      try{ if(ev) ev.preventDefault(); }catch(e){}
+
+      var url = it.url || (it.btn ? getTargetUrl(it.btn) : null);
+
+      if(url){
+        try{
+          window.open(url, "_blank");
+          return;
+        }catch(e){}
+        try{
+          location.href = url;
+          return;
+        }catch(e){}
+      }
+
+      if(it.btn){
+        try{
+          if(typeof it.btn.onclick === "function"){
+            it.btn.onclick();
+            return;
+          }
+        }catch(e){}
+
+        try{
+          it.btn.click();
+          return;
+        }catch(e){}
+      }
+    }
+
     items.forEach(function(it,i){
       var d=document.createElement("div");
       d.style="padding:10px 12px;border-bottom:1px solid #eee;cursor:pointer;white-space:pre-wrap";
       d.textContent=(i+1)+". ["+(it.type==="reserve"?"예매가능":"판매예정")+"] "+it.text;
 
-      d.onmouseenter=function(){
-        d.style.background="#f5f5f5";
-      };
-      d.onmouseleave=function(){
-        d.style.background="";
-      };
+      d.onmouseenter=function(){ d.style.background="#f5f5f5"; };
+      d.onmouseleave=function(){ d.style.background=""; };
 
-      d.onclick=function(ev){
-        try{ ev.preventDefault(); }catch(e){}
-        try{ it.row.scrollIntoView({block:"center"}); }catch(e){}
+      d.addEventListener("touchend", function(ev){
+        openImmediately(it, ev);
+      }, {passive:false});
 
-        if(it.url){
-          openTarget(it.url);
-          return;
-        }
-
-        if(it.btn){
-          try{
-            var url=getTargetUrl(it.btn);
-            if(url){
-              openTarget(url);
-              return;
-            }
-          }catch(e){}
-
-          try{
-            if(typeof it.btn.onclick==="function"){
-              it.btn.onclick();
-              return;
-            }
-          }catch(e){}
-
-          try{
-            var onclickAttr=it.btn.getAttribute("onclick") || "";
-            var u=parseJsLikeUrl(onclickAttr);
-            if(u){
-              openTarget(u);
-              return;
-            }
-          }catch(e){}
-
-          try{
-            it.btn.click();
-            return;
-          }catch(e){}
-
-          try{
-            ["mousedown","mouseup","click"].forEach(function(type){
-              it.btn.dispatchEvent(new MouseEvent(type,{
-                bubbles:true,
-                cancelable:true,
-                view:window
-              }));
-            });
-          }catch(e){}
-        }
-      };
-
+      d.addEventListener("click", function(ev){
+        openImmediately(it, ev);
+      });
+      
       body.appendChild(d);
     });
   }
 
-  function start(){
-    var items=collectItems();
-    render(items);
-  }
-
-  start();
+  render(collectItems());
 })();
